@@ -83,6 +83,7 @@ disable_bt() {
   echo "dtoverlay=disable-bt" >> /boot/config.txt
   echo "blacklist btbcm" >> /etc/modprobe.d/raspi-blacklist.conf
   echo "blacklist hci_uart >> /etc/modprobe.d/raspi-blacklist.conf
+  sudo rfkill unblock bluetooth
 }
 
 # Check if Raspberry Pi OS is active, otherwise kill script
