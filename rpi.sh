@@ -13,6 +13,8 @@ display_help() {
     echo "   -mem, --memorysplit              Set memory split"
     echo "   -gl,  --gldriver                 Set GL driver"
     echo "   -krn, --krnbt                    Set krnbt flag"
+    echo "   -dbt, --disable-bt               Disable Onboard BT
+    echo "   -dsph, --disable_splash          Disable Rainbow Splash at boot
     echo "   -h, --help                       Show help of script"
     echo
     echo "Example: Add touchscreen brightness rule on your RPI."
@@ -71,6 +73,18 @@ enable_krnbt() {
   echo "dtparam=krnbt" >> /boot/config.txt
 }
 
+disable_splash() {
+  echo "Disabling the Rainbow Splash Screen"
+  echo "disable_splash=1" >> /boot/config.txt
+}
+
+disable_bt() {
+  echo "Disabling the onboard Bluetooth adapter"
+  echo "dtoverlay=disable-bt" >> /boot/config.txt
+  echo "blacklist btbcm" >> /etc/modprobe.d/raspi-blacklist.conf
+  echo "blacklist hci_uart >> /etc/modprobe.d/raspi-blacklist.conf
+}
+
 # Check if Raspberry Pi OS is active, otherwise kill script
 if [ ! -f /etc/rpi-issue ]
 then
@@ -101,7 +115,15 @@ do
         -krn | --krnbt)
             enable_krnbt
             exit 0
-          ;;          
+          ;;
+        -dbt | --disable-bt)
+            disable_bt
+            exit 0
+          ;;
+        -dsph | --disable-splash)
+            disable_splash
+            exit 0
+          ;;
         -h | --help)
             display_help  # Call your function
             exit 0
