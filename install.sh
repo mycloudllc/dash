@@ -687,17 +687,61 @@ else
     echo "Continuing"
   fi
 
-  read -p "Build complete! Run application? (y/N) " choice
-  if [[ $choice == "y" || $choice == "Y" ]]; then
-    ./bin/dash
-    if [[ $? -eq 1 ]]; then
-      echo "Something went wrong! You may need to set up Xorg/X11"
-      exit 1
-    else
-      exit 0
-    fi
-  else
-     echo "Exiting. Check autostart.sh and rpi.sh for more options"
-     exit 0
-  fi
-fi
+while true; do
+echo "Build complete! Please choose an option:"
+echo "1) Run application"
+echo "2) Configure Raspberry Pi options"
+echo "3) Configure autostart"
+echo "4) Exit and reboot"
+
+read -p "Choose an option (1-4): " option
+
+case $option in
+    1)
+        echo "Running application..."
+        ./bin/dash
+        if [[ $? -eq 1 ]]; then
+            echo "Something went wrong! You may need to set up Xorg/X11"
+            exit 1
+        else
+            echo "Application ran successfully!"
+            exit 0
+        fi
+        ;;
+    2)
+        echo "Configuring Raspberry Pi options..."
+        if [[ -f ./rpi-options.sh ]]; then
+            chmod +x ./rpi-options.sh
+            ./rpi-options.sh
+            if [[ $? -eq 0 ]]; then
+                echo "Raspberry Pi options configured successfully!"
+            else
+                echo "There was an error running rpi-options.sh."
+            fi
+        else
+            echo "Error: rpi-options.sh not found in the current directory."
+        fi
+        ;;
+    3)
+        echo "Configuring autostart..."
+	read -p "Enter the username for the autostart configuration: " username
+        AUTOSTART_FILE="/etc/xdg/autostart/run.desktop"
+        sudo mkdir -p /etc/xdg/autostart
+        echo "[Desktop Entry]" | sudo tee $AUTOSTART_FILE > /dev/null
+        echo "Name=Dash" | sudo tee -a $AUTOSTART_FILE > /dev/null
+        echo "Exec=/home/$username/dash/bin/dash" | sudo tee -a $AUTOSTART_FILE > /dev/null
+        echo "Autostart configuration saved to $AUTOSTART_FILE"
+        ;;
+    4)
+        echo "Exiting and rebooting..."
+        sudo reboot
+        ;;
+    *)
+        echo "Invalid option. Exiting."
+        exit 1
+        ;;
+    esac
+
+    echo "Returning to the main menu..."
+    echo
+done
