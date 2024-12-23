@@ -1,3 +1,12 @@
+This is a fork of https://github.com/openDsh/dash!
+
+While the original project is great, there is some custom modifications tailered especially towards the Raspberry Pi 4. 
+While it may be compatable with other Pi boards or sbcs, it is not guaranteed.
+As with the original project this is alpha software, and is a current work in progress. Scripts may break and may have irreversable changes, so use at your own risk.
+I will try to keep this project as updated to the original project as I can, any help is welcome.
+
+Huge shoutout to the original developers @icecube45 and @rsjudka!
+
 # OpenDash
 
 OpenDash is a Qt-based infotainment center for your Linux OpenAuto installation!
