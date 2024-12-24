@@ -25,26 +25,27 @@ display_help() {
 
 # Check Distro version
 if [ -f /etc/os-release ]; then
-  OS_DISTRO=$(source /etc/os-release; echo ${PRETTY_NAME%% *})
-  if [ $OS_DISTRO = "Debian" ]; then
+  . /etc/os-release
+  OS_DISTRO=${PRETTY_NAME%% *}
+  if [ "$OS_DISTRO" = "Debian" ]; then
     isDebian=true
     #determine if script is being run on bullseye or above
-    read -d . DEBIAN_VERSION < /etc/debian_version
-    if (( $DEBIAN_VERSION > 10 )); then
-      echo Detected Debian version of Bullseye or above
+    DEBIAN_VERSION=$(cut -d. -f1 < /etc/debian_version)
+    if (( DEBIAN_VERSION > 10 )); then
+      echo "Detected Debian version of Bullseye or above"
       BULLSEYE=true
     else
-      echo Older version of Debian detected
+      echo "Older version of Debian detected"
       BULLSEYE=false
     fi
-  elif [ $OS_DISTRO = "Ubuntu" ]; then
+  elif [ "$OS_DISTRO" = "Ubuntu" ]; then
     isUbuntu=true
-    UBUNTU_VERSION=$(source /etc/os-release; echo ${VERSION_ID%% *} | cut -c1-2)
-    if (( $UBUNTU_VERSION >= 22 )); then
-      echo Detcted Ubuntu version of Jammy or above
+    UBUNTU_VERSION=${VERSION_ID%%.*}
+    if (( UBUNTU_VERSION >= 22 )); then
+      echo "Detected Ubuntu version of Jammy or above"
       JAMMY=true
     else
-      echo Older version of Ubuntu detected.
+      echo "Older version of Ubuntu detected."
       JAMMY=false
     fi
   else
@@ -53,9 +54,8 @@ if [ -f /etc/os-release ]; then
   fi
 fi
 
-#check if /etc/rpi-issue exists, if not set the install Args to be false
-if [ -f /etc/rpi-issue ]
-then
+#check if /etc/rpi-issue exists,  if not set the install Args to be false
+if [ -f /etc/rpi-issue ]; then
   rpiModel=$(awk '{print $3}' < /sys/firmware/devicetree/base/model)
   echo "Detected Raspberry Pi Model $rpiModel"
   installArgs="-DRPI_BUILD=true"
@@ -67,16 +67,16 @@ fi
 
 #check for potential resource limit
 totalMem=$(free -tm | awk '/Total/ {print $2}')
-if [[ $totalMem -lt 1900 ]]; then
+if (( totalMem < 1900 )); then
   echo "$totalMem MB RAM detected"
   echo "You may run out of memory while compiling with less than 2GB"
   echo "Consider raising swap space or compiling on another machine"
-  sleep 5;
+  sleep 5
 fi
 
 BUILD_TYPE="Release"
 
-#check to see if there are any arguments supplied, if none are supplied run full install
+#check to see if there are any arguments supplied,  if none are supplied run full install
 if [ $# -gt 0 ]; then
   #initialize all arguments to false before looping to find which are available
   deps=false
@@ -90,37 +90,25 @@ if [ $# -gt 0 ]; then
   ofono=false
     while [ "$1" != "" ]; do
         case $1 in
-            --deps )           shift
-                                    deps=true
-                                    ;;
-            --aasdk )           aasdk=true
-                                    ;;
-            --gstreamer )       gstreamer=true
-                                    ;;
-            --openauto )       openauto=true
-                                    ;;
-            --dash )           dash=true
-                                    ;;
-            --h264bitstream )  h264bitstream=true
-                                    ;;
-            --pulseaudio )     pulseaudio=true
-                                    ;;
-            --bluez )          bluez=true
-                                    ;;
-            --ofono )          ofono=true
-                                    ;;
-            --debug )          BUILD_TYPE="Debug"
-                                    ;;
-            -h | --help )           display_help
-                                    exit
-                                    ;;
-            * )                     display_help
-                                    exit 1
+            --deps )           deps=true ;;
+            --aasdk )          aasdk=true ;;
+            --gstreamer )      gstreamer=true ;;
+            --openauto )       openauto=true ;;
+            --dash )           dash=true ;;
+            --h264bitstream )  h264bitstream=true ;;
+            --pulseaudio )     pulseaudio=true ;;
+            --bluez )          bluez=true ;;
+            --ofono )          ofono=true ;;
+            --debug )          BUILD_TYPE="Debug" ;;
+            -h | --help )      display_help
+                               exit ;;
+            * )                display_help
+                               exit 1 ;;
         esac
         shift
     done
 else
-    echo -e Full install running'\n'
+    echo -e "Full install running\n"
     deps=true
     aasdk=true
     gstreamer=true
@@ -130,7 +118,7 @@ else
     pulseaudio=false
     bluez=false
     ofono=false
-    if [ $isRpi = true ]; then
+    if [ "$isRpi" = true ]; then
       pulseaudio=true
       bluez=true
       ofono=false # Skip Ofono due to issue with Bluetooth HSP
@@ -188,35 +176,33 @@ dependencies=(
 "ffmpeg"
 )
 
-
 ###############################  dependencies  #########################
-if [ $deps = false ]
-  then
-    echo -e skipping dependencies '\n'
-  else
-    if [ $isDebian ] && [ $BULLSEYE = false ]; then
-      echo Adding qt5-default to dependencies
-      dependencies[${#dependencies[@]}]="qt5-default"
+if [ "$deps" = false ]; then
+    echo -e "skipping dependencies\n"
+else
+    if [ "$isDebian" = true ] && [ "$BULLSEYE" = false ]; then
+      echo "Adding qt5-default to dependencies"
+      dependencies+=("qt5-default")
     fi
 
-    echo installing dependencies
+    echo "installing dependencies"
     #loop through dependencies and install
-    echo Running apt-get update
+    echo "Running apt-get update"
     sudo apt-get update
 
     installString="sudo apt-get install -y "
 
     #create apt-get install string
-    for i in ${dependencies[@]}; do
+    for i in "${dependencies[@]}"; do
       installString+=" $i"
     done
 
     #run install
-    ${installString}
-    if [[ $? -eq 0 ]]; then
-        echo -e All dependencies Installed ok '\n'
+    $installString
+    if [ $? -eq 0 ]; then
+        echo -e "All dependencies Installed ok\n"
     else
-        echo Package failed to install with error code $?, quitting check logs above
+        echo "Package failed to install with error code $?,  quitting check logs above"
         exit 1
     fi
 fi
@@ -613,7 +599,7 @@ fi
 
 ###############################  dash  #########################
 if [ $dash = false ]; then
-	echo -e Skipping dash'\n'
+    echo -e "Skipping dash\n"
 else
 
   #change to project root
@@ -669,79 +655,62 @@ else
   fi
   cd $script_path
 
-  #Raspberry Pi addons 
-  if $isRpi; then
-    read -p "View select Raspberry Pi enhancements? (y/N) " choice
-    if [[ $choice == "y" || $choice == "Y" ]]; then
-      ./rpi.sh
-    else
-      echo "Continuing"
-    fi
-  fi
-
-  #Autostart options
-  read -p "View autostart options? (y/N) " choice
-  if [[ $choice == "y" || $choice == "Y" ]]; then
-    ./autostart.sh
-  else
-    echo "Continuing"
-  fi
-
 while true; do
-echo "Build complete! Please choose an option:"
-echo "1) Run application"
-echo "2) Configure Raspberry Pi options"
-echo "3) Configure autostart"
-echo "4) Exit and reboot"
+        echo "Build complete! Please choose an option: "
+        echo "1) Run application"
+        echo "2) Configure Raspberry Pi options"
+        echo "3) Configure autostart"
+        echo "4) Exit and reboot"
 
-read -p "Choose an option (1-4): " option
+        read -p "Choose an option (1-4): " option
 
-case $option in
-    1)
-        echo "Running application..."
-        ./bin/dash
-        if [[ $? -eq 1 ]]; then
-            echo "Something went wrong! You may need to set up Xorg/X11"
-            exit 1
-        else
-            echo "Application ran successfully!"
-            exit 0
-        fi
-        ;;
-    2)
-        echo "Configuring Raspberry Pi options..."
-        if [[ -f ./rpi-options.sh ]]; then
-            chmod +x ./rpi-options.sh
-            ./rpi-options.sh
-            if [[ $? -eq 0 ]]; then
-                echo "Raspberry Pi options configured successfully!"
-            else
-                echo "There was an error running rpi-options.sh."
-            fi
-        else
-            echo "Error: rpi-options.sh not found in the current directory."
-        fi
-        ;;
-    3)
-        echo "Configuring autostart..."
-	read -p "Enter the username for the autostart configuration: " username
-        AUTOSTART_FILE="/etc/xdg/autostart/run.desktop"
-        sudo mkdir -p /etc/xdg/autostart
-        echo "[Desktop Entry]" | sudo tee $AUTOSTART_FILE > /dev/null
-        echo "Name=Dash" | sudo tee -a $AUTOSTART_FILE > /dev/null
-        echo "Exec=/home/$username/dash/bin/dash" | sudo tee -a $AUTOSTART_FILE > /dev/null
-        echo "Autostart configuration saved to $AUTOSTART_FILE"
-        ;;
-    4)
-        echo "Exiting and rebooting..."
-        sudo reboot
-        ;;
-    *)
-        echo "Invalid option. Exiting."
-        exit 1
-        ;;
-    esac
+        case $option in
+            1)
+                echo "Running application..."
+                ./bin/dash
+                if [[ $? -eq 1 ]]; then
+                    echo "Something went wrong! You may need to set up Xorg/X11"
+                    exit 1
+                else
+                    echo "Application ran successfully!"
+                    exit 0
+                fi
+                ;;
+            2)
+                echo "Configuring Raspberry Pi options..."
+                if [[ -f ./rpi-options.sh ]]; then
+                    chmod +x ./rpi-options.sh
+                    ./rpi-options.sh
+                    if [[ $? -eq 0 ]]; then
+                        echo "Raspberry Pi options configured successfully!"
+                    else
+                        echo "There was an error running rpi-options.sh."
+                    fi
+                else
+                    echo "Error: rpi-options.sh not found in the current directory."
+                fi
+                ;;
+            3)
+                echo "Configuring autostart..."
+                read -p "Enter the username for the autostart configuration: " username
+                AUTOSTART_FILE="/etc/xdg/autostart/run.desktop"
+                sudo mkdir -p /etc/xdg/autostart
+                echo "[Desktop Entry]" | sudo tee $AUTOSTART_FILE > /dev/null
+                echo "Name=Dash" | sudo tee -a $AUTOSTART_FILE > /dev/null
+                echo "Exec=/home/$username/dash/bin/dash" | sudo tee -a $AUTOSTART_FILE > /dev/null
+                echo "Autostart configuration saved to $AUTOSTART_FILE"
+                ;;
+            4)
+                echo "Exiting and rebooting..."
+                sudo reboot
+                ;;
+            *)
+                echo "Invalid option. Exiting."
+                exit 1
+                ;;
+        esac
 
-    echo "Returning to the main menu..."
-    echo
-done
+        echo "Returning to the main menu..."
+        echo
+    done
+fi
