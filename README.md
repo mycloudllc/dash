@@ -43,7 +43,7 @@ The install script included in the dash repo will install all the required packa
 
 ### 1. Clone the repo, Run the install script
 ```
-git clone https://github.com/openDsh/dash
+git clone https://github.com/mycloudllc/dash
 
 cd dash
 
