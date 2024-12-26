@@ -67,7 +67,7 @@ remove_cursor() {
 remove_taskbar() {
     echo -e "${GREEN}Removing taskbar...${NC}"
     # Create a copy for backup
-    cp /usr/bin/lxpanel /usr/bin/lxpanel.backup
+    sudo cp /usr/bin/lxpanel /usr/bin/lxpanel.backup
     # Disable taskbar in LXDE
     sudo rm -f /usr/bin/lxpanel
     echo -e "${YELLOW}Taskbar removed!${NC}"
