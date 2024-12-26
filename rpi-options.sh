@@ -32,6 +32,8 @@ setup_hotspot() {
     
     # Check if the hotspot.sh script exists in the same directory
     if [ -f "$(dirname "$0")/hotspot.sh" ]; then
+        #add executions permissions to hotspot script
+        chmod +x $(dirname "$0")/hotspot.sh
         # Call the hotspot.sh script
         bash "$(dirname "$0")/hotspot.sh"
         echo -e "${YELLOW}Hotspot setup complete!${NC}"
@@ -44,15 +46,17 @@ setup_hotspot() {
 remove_cursor() {
     echo -e "${GREEN}Removing cursor from desktop...${NC}"
     # Add commands to hide the cursor
-    echo "xsetroot -cursor_name none" >> ~/.xinitrc
+    sed -i -- "s/#xserver-command=X/xserver-command=X -nocursor/" /etc/lightdm/lightdm.conf
     echo -e "${YELLOW}Cursor removed!${NC}"
 }
 
 # Function to remove taskbar
 remove_taskbar() {
     echo -e "${GREEN}Removing taskbar...${NC}"
-    # Example: Disable taskbar in LXDE
-    sudo mv /etc/xdg/lxsession/LXDE-pi/panel ~/.config/
+    # Create a copy for backup
+    cp /usr/bin/lxpanel /usr/bin/lxpanel.backup
+    # Disable taskbar in LXDE
+    sudo rm -f /usr/bin/lxpanel
     echo -e "${YELLOW}Taskbar removed!${NC}"
 }
 
@@ -63,7 +67,7 @@ disable_bluetooth() {
     echo "blacklist btbcm" >> /etc/modprobe.d/raspi-blacklist.conf
     echo "blacklist hci_uart >> /etc/modprobe.d/raspi-blacklist.conf
     sudo rfkill unblock bluetooth
-    echo -e "${YELLOW}Bluetooth disabled!${NC}"
+    echo -e "${YELLOW}Onboard Bluetooth disabled!${NC}"
 }
 
 # Function to set up custom wallpaper and boot screen
