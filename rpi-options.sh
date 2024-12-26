@@ -23,6 +23,7 @@ display_menu() {
     echo -e "8) Speed up boot and improve stability"
     echo -e "9) Set up brightness control"
     echo -e "10) Set up DAC Hat"
+    echo -e "11) Enable experimental bluetooth pin pairing"
     echo -e "0) Exit"
     echo -e "${NC}"
     read -p "Please select an option (0-10): " choice
@@ -161,6 +162,13 @@ disable_wayland() {
     echo -e "${YELLOW}Wayland has been replaced with X11. You may now use app launcher!${NC}"
 }
 
+# Experimental Function to enable bt pin pairing
+enable_btpin() {
+    sudo setup_bluetooth.sh
+    echo -e "${RED}Experimental bluetooth pairing is now enabled and a service has been created. Pin is 4321.${NC}"
+    echo -e "${RED}To disable run systemctl disable bt_start.service${NC}"
+}
+    
 # Main loop
 while true; do
     display_menu
@@ -175,8 +183,9 @@ while true; do
         8) speed_up_boot ;;
         9) setup_brightness ;;
         10) setup_dac_hat ;;
+        11) enable_btpin ;;
         0) exit 0 ;;
-        *) echo -e "${RED}Invalid choice! Please select a number between 0 and 8.${NC}" ;;
+        *) echo -e "${RED}Invalid choice! Please select a number between 0 and 11.${NC}" ;;
     esac
     read -p "Press any key to continue..." -n1 -s
 done
