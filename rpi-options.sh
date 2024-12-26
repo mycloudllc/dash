@@ -93,6 +93,7 @@ setup_wallpaper() {
 speed_up_boot() {
     echo -e "${GREEN}Speeding up boot and improving stability...${NC}"
     # Disable unnecessary services or tweak boot config
+    sudo raspi-config nonint do_boot_wait 0
     sudo systemctl disable avahi-daemon
     echo "dtparam=krnbt" >> /boot/config.txt
     echo -e "${YELLOW}Boot speed improved and stability enhanced!${NC}"
