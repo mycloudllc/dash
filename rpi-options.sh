@@ -18,8 +18,8 @@ display_menu() {
     echo -e "3) Remove taskbar"
     echo -e "4) Disable onboard Bluetooth"
     echo -e "5) Set up custom wallpaper and boot screen."
-    echo -s "6) Disable Screen blanking."
-    echo -s "7) Switch to x11 from wayland on bookworm (needed for app launcher."
+    echo -e "6) Disable Screen blanking."
+    echo -e "7) Switch to x11 from wayland on bookworm (needed for app launcher."
     echo -e "8) Speed up boot and improve stability"
     echo -e "9) Set up brightness control"
     echo -e "10) Set up DAC Hat"
@@ -28,10 +28,21 @@ display_menu() {
     read -p "Please select an option (0-10): " choice
 }
 
+# Function to determine OS version
+get_os_version() {
+    if grep -q "bookworm" /etc/os-release; then
+        echo "bookworm"
+    else
+        echo "older"
+    fi
+}
+
+# Get the OS version
+os_version=$(get_os_version)
+
 # Function to set up hotspot for wireless AA
 setup_hotspot() {
-    echo -e "${GREEN}Setting up hotspot for wireless AA...${NC}"
-    
+    echo -e "${GREEN}Setting up hotspot for wireless AA...${NC}" 
     # Check if the hotspot.sh script exists in the same directory
     if [ -f "$(dirname "$0")/hotspot.sh" ]; then
         #add executions permissions to hotspot script
@@ -67,7 +78,7 @@ disable_bluetooth() {
     echo "Disabling the onboard Bluetooth adapter"
     echo "dtoverlay=disable-bt" >> /boot/config.txt
     echo "blacklist btbcm" >> /etc/modprobe.d/raspi-blacklist.conf
-    echo "blacklist hci_uart >> /etc/modprobe.d/raspi-blacklist.conf
+    echo "blacklist hci_uart" >> /etc/modprobe.d/raspi-blacklist.conf
     sudo rfkill unblock bluetooth
     echo -e "${YELLOW}Onboard Bluetooth disabled!${NC}"
 }
@@ -93,7 +104,16 @@ setup_wallpaper() {
 speed_up_boot() {
     echo -e "${GREEN}Speeding up boot and improving stability...${NC}"
     # Disable unnecessary services or tweak boot config
-    sudo raspi-config nonint do_boot_wait 0
+    # Execute the appropriate command based on the OS version
+    if [ "$os_version" = "bookworm" ]; then
+        echo "Detected Bookworm. Disabling NetworkManager-wait-online.service..."
+        sudo systemctl disable NetworkManager-wait-online.service
+    elif [ "$os_version" = "older" ]; then
+        echo "Detected older Debian version. Configuring boot wait..."
+        sudo raspi-config nonint do_boot_wait 0
+    else
+        echo "Unsupported OS version or error detecting OS version."
+    fi
     sudo systemctl disable avahi-daemon
     echo "dtparam=krnbt" >> /boot/config.txt
     echo -e "${YELLOW}Boot speed improved and stability enhanced!${NC}"
