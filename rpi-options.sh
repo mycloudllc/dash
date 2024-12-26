@@ -18,12 +18,14 @@ display_menu() {
     echo -e "3) Remove taskbar"
     echo -e "4) Disable onboard Bluetooth"
     echo -e "5) Set up custom wallpaper and boot screen."
-    echo -e "6) Speed up boot and improve stability"
-    echo -e "7) Set up brightness control"
-    echo -e "8) Set up DAC Hat"
+    echo -s "6) Disable Screen blanking."
+    echo -s "7) Switch to x11 from wayland on bookworm (needed for app launcher."
+    echo -e "8) Speed up boot and improve stability"
+    echo -e "9) Set up brightness control"
+    echo -e "10) Set up DAC Hat"
     echo -e "0) Exit"
     echo -e "${NC}"
-    read -p "Please select an option (0-8): " choice
+    read -p "Please select an option (0-10): " choice
 }
 
 # Function to set up hotspot for wireless AA
@@ -126,6 +128,17 @@ setup_dac_hat() {
     fi
 }
 
+# Function to disable screen blanking
+disable_blanking() {
+    sudo raspi-config nonint do_blanking 1
+    echo -e "${YELLOW}Screen Blanking disabled!${NC}"
+}
+
+# Function to disable wayland
+disable_wayland() {
+    sudo raspi-config nonint do_wayland W1
+    echo -e "${YELLOW}Wayland has been replaced with X11. You may now use app launcher!${NC}"
+}
 
 # Main loop
 while true; do
@@ -136,9 +149,11 @@ while true; do
         3) remove_taskbar ;;
         4) disable_bluetooth ;;
         5) setup_wallpaper ;;
-        6) speed_up_boot ;;
-        7) setup_brightness ;;
-        8) setup_dac_hat ;;
+        5) disable_blanking ;;
+        7) disable_wayland ;;
+        8) speed_up_boot ;;
+        9) setup_brightness ;;
+        10) setup_dac_hat ;;
         0) exit 0 ;;
         *) echo -e "${RED}Invalid choice! Please select a number between 0 and 8.${NC}" ;;
     esac
