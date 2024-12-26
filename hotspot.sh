@@ -3,7 +3,7 @@
 # Default values
 DEFAULT_SSID="DASH"
 DEFAULT_PASSWORD="1234567890"
-DEFAULT_OPENAUTO_CONFIG_PATH="$HOME/.config/openauto/openauto.ini"  # Default location in user's home directory
+DEFAULT_OPENAUTO_CONFIG_PATH="$HOME/openauto.ini"  # Default location in user's home directory
 
 # Colors
 RED='\033[0;31m'
@@ -49,19 +49,24 @@ echo -e "${GREEN}Enter the path to openauto.ini or press Enter to use the defaul
 read -r OPENAUTO_CONFIG_PATH
 OPENAUTO_CONFIG_PATH=${OPENAUTO_CONFIG_PATH:-$DEFAULT_OPENAUTO_CONFIG_PATH}
 
+# For hotspot/wifi to be enabled, country code is needed
+echo -e "${GREEN}What is your 2 digit country code to enable wifi? (default: US):${NC}"
+read -r COUNTRY_CODE
+COUNTRY_CODE=${COUNTRY_CODE:US}
+
 # Configure the hotspot
+sudo raspi-config nonint do_wifi_country "$COUNTRY_CODE"
 echo -e "${BLUE}Configuring hotspot...${NC}"
-sudo nmcli device wifi hotspot con-name "$SSID" ssid "$SSID"
-sudo nmcli connection modify "$SSID" 802-11-wireless-security.key-mgmt wpa-psk 802-11-wireless-security.psk "$PASSWORD"
+sudo nmcli device wifi hotspot ssid "$SSID" password "$PASSWORD" ifname wlan0
 
 if [ "$SHARING" = "yes" ]; then
-   sudo nmcli connection modify "$SSID" ipv4.method shared
+   sudo nmcli connection modify Hotspot ipv4.method shared
 else
-   sudo nmcli connection modify "$SSID" ipv4.method manual
+   sudo nmcli connection modify Hotspot ipv4.method manual
 fi
 
 if [ "$AUTOSTART" = "yes" ]; then
-   sudo nmcli connection modify "$SSID" connection.autoconnect yes
+   sudo nmcli connection modify Hotspot connection.autoconnect yes
 fi
 
 # Simulate loading
