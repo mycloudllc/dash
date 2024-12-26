@@ -67,6 +67,8 @@ remove_cursor() {
 # Function to remove taskbar
 remove_taskbar() {
     echo -e "${GREEN}Removing taskbar...${NC}"
+    #remove waste basket
+    sudo sed -i '/^show_trash=/c\show_trash=0' /etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf || echo "show_trash=0" | sudo tee -a /etc/xdg/pcmanfm/LXDE-pi/desktop-items-0.conf
     # Create a copy for backup
     sudo cp /usr/bin/lxpanel /usr/bin/lxpanel.backup
     # Disable taskbar in LXDE
