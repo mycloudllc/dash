@@ -79,7 +79,7 @@ remove_taskbar() {
 # Function to disable onboard Bluetooth
 disable_bluetooth() {
     echo "Disabling the onboard Bluetooth adapter"
-    echo "dtoverlay=disable-bt" >> /boot/config.txt
+    echo "dtoverlay=disable-bt" >> /boot/firmware/config.txt
     echo "blacklist btbcm" >> /etc/modprobe.d/raspi-blacklist.conf
     echo "blacklist hci_uart" >> /etc/modprobe.d/raspi-blacklist.conf
     sudo rfkill unblock bluetooth
@@ -118,7 +118,7 @@ speed_up_boot() {
         echo "Unsupported OS version or error detecting OS version."
     fi
     sudo systemctl disable avahi-daemon
-    echo "dtparam=krnbt" >> /boot/config.txt
+    echo "dtparam=krnbt" >> /boot/firmware/config.txt
     echo -e "${YELLOW}Boot speed improved and stability enhanced!${NC}"
 }
 
