@@ -3,7 +3,7 @@
 # Function to enable DAC overlay
 enable_overlay() {
     local overlay_name=$1
-    local config_file="/boot/config.txt"
+    local config_file="/boot/firmware/config.txt"
     
     echo "Enabling $overlay_name overlay..."
     
